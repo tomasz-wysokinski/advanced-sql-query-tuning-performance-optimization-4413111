@@ -8,7 +8,9 @@ ARG NODE_VERSION="none"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
 RUN rm -f /etc/apt/sources.list.d/yarn.list \
-    && apt update && apt install -y postgresql-client
+    && for i in 1 2 3; do \
+         apt update && apt install -y postgresql-client && break || sleep 5; \
+       done
 
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
 COPY requirements.txt /tmp/pip-tmp/
