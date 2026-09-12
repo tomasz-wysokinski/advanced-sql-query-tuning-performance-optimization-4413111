@@ -1,3 +1,5 @@
+FROM postgres:16-bullseye AS pg-client
+
 ARG VARIANT=3-bullseye
 FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 
@@ -8,11 +10,11 @@ ARG NODE_VERSION="none"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
 RUN rm -f /etc/apt/sources.list.d/yarn.list \
-    && success=0 \
-    && for i in 1 2 3 4 5 6 7 8 9 10; do \
-         apt update && apt install -y postgresql-client && success=1 && break || sleep 10; \
-       done \
-    && [ "$success" = "1" ]
+    && apt update
+
+COPY --from=pg-client /usr/lib/postgresql/16/bin/psql /usr/local/bin/psql
+COPY --from=pg-client /usr/lib/x86_64-linux-gnu/libpq.so.5* /usr/lib/x86_64-linux-gnu/
+RUN ldconfig
 
 
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
